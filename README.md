@@ -28,3 +28,14 @@ export MAILBOX_END_DATE=2016-01-01T00:00:00Z
 mailbox-search $(find . -type d -name "cur" -path "*/.Sent/*")
 ```
 
+### Installation
+
+##### Option 1
+
+If you have Go installed, all you need is `go get github.com/alexhokl/mailbox-search`.
+
+##### Option 2
+
+Download binary from release page and put the binary in one of the directories
+specified in `PATH` enviornment variable.
+
