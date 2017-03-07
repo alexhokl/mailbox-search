@@ -190,10 +190,9 @@ func getEnvironmentVariable(name string) (string, error) {
 }
 
 func getDate(valStr string) (time.Time, error) {
-	const format = "2016-12-31T12:00:00Z"
-	val, err := time.ParseInLocation(format, valStr, nil)
+	val, err := time.ParseInLocation(time.RFC3339, valStr, nil)
 	if err != nil {
-		return time.Now(), errors.New(fmt.Sprintf("Unable to parse date. Expected format %s", format))
+		return time.Now(), errors.New(fmt.Sprintf("Unable to parse date. Expected format %s", time.RFC3339))
 	}
 	return val, nil
 }
