@@ -11,7 +11,7 @@ export MAILBOX_SEARCH_MODE=normal
 export MAILBOX_SEARCH_TARGETS=user.to.be.recovered.1@test.com,user.to.be.recovered2@test.com
 export MAILBOX_SEARCH_DOMAIN=test.com
 export MAILBOX_START_DATE=2016-01-01T00:00:00Z
-export MAILBOX_END_DATE=2016-01-01T00:00:00Z
+export MAILBOX_END_DATE=2017-01-01T00:00:00Z
 
 mailbox-search $(find . -type d -name "cur" -not -path "*/.Restored/*" -not -path "*/.spam/*" -not -path "*/.Sent/*" -not -path "*/.Trash/*" -not -path "*/.Junk*" -not -path "*/.Drafts/*" -not -path "*/.Archive/*" -not -path "*/.Infected*")
 ```
@@ -23,7 +23,7 @@ export MAILBOX_SEARCH_MODE=sent
 export MAILBOX_SEARCH_TARGETS=user.to.be.recovered.1@test.com,user.to.be.recovered2@test.com
 export MAILBOX_SEARCH_DOMAIN=test.com
 export MAILBOX_START_DATE=2016-01-01T00:00:00Z
-export MAILBOX_END_DATE=2016-01-01T00:00:00Z
+export MAILBOX_END_DATE=2017-01-01T00:00:00Z
 
 mailbox-search $(find . -type d -name "cur" -path "*/.Sent/*")
 ```
@@ -37,7 +37,7 @@ export MAILBOX_SEARCH_MODE=normal_malform
 export MAILBOX_SEARCH_TARGETS=user.to.be.recovered.1@test.com,user.to.be.recovered2@test.com
 export MAILBOX_SEARCH_DOMAIN=test.com
 export MAILBOX_START_DATE=2016-01-01T00:00:00Z
-export MAILBOX_END_DATE=2016-01-01T00:00:00Z
+export MAILBOX_END_DATE=2017-01-01T00:00:00Z
 
 mailbox-search $(find . -type d -name "cur" -not -path "*/.Restored/*" -not -path "*/.spam/*" -not -path "*/.Sent/*" -not -path "*/.Trash/*" -not -path "*/.Junk*" -not -path "*/.Drafts/*" -not -path "*/.Archive/*" -not -path "*/.Infected*")
 ```
