@@ -95,16 +95,16 @@ func processMailFile(directory string, file os.FileInfo, processMode mode, domai
 }
 
 func isContainAddress(mailMessage *mail.Message, targets []string) bool {
-	senders, _ := mailMessage.Header.AddressList("To")
-	copies, _ := mailMessage.Header.AddressList("Cc")
-	blindCopies, _ := mailMessage.Header.AddressList("Bcc")
-	if hasTargets(senders, targets) {
+	senders := mailMessage.Header.Get("To")
+	copies := mailMessage.Header.Get("Cc")
+	blindCopies := mailMessage.Header.Get("Bcc")
+	if hasTargetsInString(senders, targets) {
 		return true
 	}
-	if hasTargets(copies, targets) {
+	if hasTargetsInString(copies, targets) {
 		return true
 	}
-	if hasTargets(blindCopies, targets) {
+	if hasTargetsInString(blindCopies, targets) {
 		return true
 	}
 	return false
@@ -171,6 +171,15 @@ func hasTargets(list []*mail.Address, targets []string) bool {
 			if t == a.Address {
 				return true
 			}
+		}
+	}
+	return false
+}
+
+func hasTargetsInString(strList string, targets []string) bool {
+	for _, t := range targets {
+		if strings.Contains(strList, t) {
+			return true
 		}
 	}
 	return false
