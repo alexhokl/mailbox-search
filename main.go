@@ -8,9 +8,16 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
+)
+
+type mode int
+
+const (
+	NORMAL mode = iota
+	SENT
+	NORMAL_MALFORM
 )
 
 func main() {
@@ -19,7 +26,7 @@ func main() {
 		fmt.Println(errTargets)
 		return
 	}
-	isSentMode, errMode := isSentMode()
+	processMode, errMode := getMode()
 	if errMode != nil {
 		fmt.Println(errMode)
 		return
@@ -46,32 +53,61 @@ func main() {
 			continue
 		}
 		for _, f := range files {
-			file, errOpen := os.Open(path.Join(d, f.Name()))
-			if errOpen != nil {
-				fmt.Println(errOpen)
-				return
-			}
-
-			mailMsg, err := mail.ReadMessage(file)
+			err := processMailFile(d, f, processMode, domain, targets, startDate, endDate)
 			if err != nil {
 				fmt.Println(err)
 				return
 			}
-
-			if isSentMode {
-				if isTargetsTheOnlyAddress(mailMsg, domain, targets) && isInDateRange(mailMsg, startDate, endDate) {
-					fullPath, _ := filepath.Abs(path.Join(d, f.Name()))
-					fmt.Println(fullPath)
-				}
-			} else {
-				if isInAddressList(mailMsg, targets) && isInDateRange(mailMsg, startDate, endDate) {
-					fullPath, _ := filepath.Abs(path.Join(d, f.Name()))
-					fmt.Println(fullPath)
-				}
-			}
-			file.Close()
 		}
 	}
+}
+
+func processMailFile(directory string, file os.FileInfo, processMode mode, domain string, targets []string, startDate time.Time, endDate time.Time) error {
+	fileReader, errOpen := os.Open(path.Join(directory, file.Name()))
+	if errOpen != nil {
+		return errOpen
+	}
+	defer fileReader.Close()
+
+	mailMsg, err := mail.ReadMessage(fileReader)
+	if err != nil {
+		return err
+	}
+
+	switch processMode {
+	case NORMAL:
+		if isInAddressList(mailMsg, targets) && isInDateRange(mailMsg, startDate, endDate) {
+			printPath(directory, file)
+		}
+	case SENT:
+		if isTargetsTheOnlyAddress(mailMsg, domain, targets) && isInDateRange(mailMsg, startDate, endDate) {
+			printPath(directory, file)
+		}
+	case NORMAL_MALFORM:
+		if !isInAddressList(mailMsg, targets) && isInDateRange(mailMsg, startDate, endDate) && isContainAddress(mailMsg, targets) {
+			printPath(directory, file)
+		}
+	default:
+		return errors.New(fmt.Sprintf("Mode [%s] is not supported", processMode))
+	}
+
+	return nil
+}
+
+func isContainAddress(mailMessage *mail.Message, targets []string) bool {
+	senders, _ := mailMessage.Header.AddressList("To")
+	copies, _ := mailMessage.Header.AddressList("Cc")
+	blindCopies, _ := mailMessage.Header.AddressList("Bcc")
+	if hasTargets(senders, targets) {
+		return true
+	}
+	if hasTargets(copies, targets) {
+		return true
+	}
+	if hasTargets(blindCopies, targets) {
+		return true
+	}
+	return false
 }
 
 func isInAddressList(mailMessage *mail.Message, targets []string) bool {
@@ -145,12 +181,12 @@ func isInDateRange(mailMessage *mail.Message, startDate time.Time, endDate time.
 	return date.After(startDate) && date.Before(endDate)
 }
 
-func isSentMode() (bool, error) {
-	valStr, err := getEnvironmentVariable("MAILBOX_SEARCH_IS_SENT")
+func getMode() (mode, error) {
+	valStr, err := getEnvironmentVariable("MAILBOX_SEARCH_MODE")
 	if err != nil {
-		return false, err
+		return NORMAL, err
 	}
-	return strconv.ParseBool(valStr)
+	return parseMode(valStr)
 }
 
 func getTargets() ([]string, error) {
@@ -195,4 +231,22 @@ func getDate(valStr string) (time.Time, error) {
 		return time.Now(), errors.New(fmt.Sprintf("Unable to parse date. Expected format %s", time.RFC3339))
 	}
 	return val, nil
+}
+
+func parseMode(valStr string) (mode, error) {
+	switch valStr {
+	case "normal":
+		return NORMAL, nil
+	case "sent":
+		return SENT, nil
+	case "normal_malform":
+		return NORMAL_MALFORM, nil
+	default:
+		return NORMAL, errors.New(fmt.Sprintf("Mode [%s] is not supported", valStr))
+	}
+}
+
+func printPath(directory string, file os.FileInfo) {
+	fullPath, _ := filepath.Abs(path.Join(directory, file.Name()))
+	fmt.Println(fullPath)
 }
