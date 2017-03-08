@@ -18,6 +18,7 @@ const (
 	NORMAL mode = iota
 	SENT
 	NORMAL_MALFORM
+	SUBJECT
 )
 
 func main() {
@@ -85,6 +86,14 @@ func processMailFile(directory string, file os.FileInfo, processMode mode, domai
 		}
 	case NORMAL_MALFORM:
 		if !isInAddressList(mailMsg, targets) && isInDateRange(mailMsg, startDate, endDate) && isContainAddress(mailMsg, targets) {
+			printPath(directory, file)
+		}
+	case SUBJECT:
+		subject, errSubject := getEnvironmentVariable("MAILBOX_SEARCH_SUBJECT")
+		if errSubject != nil {
+			return errSubject
+		}
+		if isContainSubject(mailMsg, subject) {
 			printPath(directory, file)
 		}
 	default:
@@ -252,6 +261,8 @@ func parseMode(valStr string) (mode, error) {
 		return SENT, nil
 	case "normal_malform":
 		return NORMAL_MALFORM, nil
+	case "subject":
+		return SUBJECT, nil
 	default:
 		return NORMAL, errors.New(fmt.Sprintf("Mode [%s] is not supported", valStr))
 	}
@@ -260,4 +271,9 @@ func parseMode(valStr string) (mode, error) {
 func printPath(directory string, file os.FileInfo) {
 	fullPath, _ := filepath.Abs(path.Join(directory, file.Name()))
 	fmt.Println(fullPath)
+}
+
+func isContainSubject(mailMessage *mail.Message, searchStr string) bool {
+	subject := mailMessage.Header.Get("Subject")
+	return strings.Contains(subject, searchStr)
 }

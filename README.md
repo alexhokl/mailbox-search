@@ -42,6 +42,15 @@ export MAILBOX_SEARCH_END_DATE=2017-01-01T00:00:00Z
 mailbox-search $(find . -type d -name "cur" -not -path "*/.Restored/*" -not -path "*/.spam/*" -not -path "*/.Sent/*" -not -path "*/.Trash/*" -not -path "*/.Junk*" -not -path "*/.Drafts/*" -not -path "*/.Archive/*" -not -path "*/.Infected*")
 ```
 
+To dump paths to all files of mail containing a specified subject.
+
+```sh
+export MAILBOX_SEARCH_MODE=subject
+export MAILBOX_SEARCH_SUBJECT="Some subject of interest"
+
+mailbox-search $(find . -type d -name "cur" -not -path "*/.Restored/*" -not -path "*/.spam/*" -not -path "*/.Sent/*" -not -path "*/.Trash/*" -not -path "*/.Junk*" -not -path "*/.Drafts/*" -not -path "*/.Archive/*" -not -path "*/.Infected*")
+```
+
 ### Installation
 
 ##### Option 1
