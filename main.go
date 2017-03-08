@@ -123,6 +123,7 @@ func isInAddressList(mailMessage *mail.Message, targets []string) bool {
 	if hasTargets(blindCopies, targets) {
 		return true
 	}
+
 	return false
 }
 
@@ -178,7 +179,8 @@ func hasTargets(list []*mail.Address, targets []string) bool {
 
 func hasTargetsInString(strList string, targets []string) bool {
 	for _, t := range targets {
-		if strings.Contains(strList, t) {
+		nonTarget := fmt.Sprintf("\"%s\"", t)
+		if strings.Contains(strList, t) && !strings.Contains(strList, nonTarget) {
 			return true
 		}
 	}
